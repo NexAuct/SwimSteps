@@ -17,6 +17,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: swimstep
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,17 +29,15 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-          cache-dependency-path: swimstep/package-lock.json
+          cache-dependency-path: 'swimstep/package-lock.json'
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
       - name: Install dependencies
-        working-directory: swimstep
         run: npm ci
 
       - name: Build
-        working-directory: swimstep
         run: npm run build
 
       - name: Upload artifact

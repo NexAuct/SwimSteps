@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: swimstep
 
     steps:
     - uses: actions/checkout@v4
@@ -18,18 +21,15 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: swimstep/package-lock.json
+        cache-dependency-path: 'swimstep/package-lock.json'
 
     - name: Install dependencies
-      working-directory: swimstep
       run: npm ci
 
     - name: Run ESLint
-      working-directory: swimstep
       run: npx eslint . --ext .js,.jsx
 
     - name: Build
-      working-directory: swimstep
       run: npm run build
 
     - name: Upload build artifacts

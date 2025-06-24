@@ -12,6 +12,9 @@ jobs:
   auto-merge:
     runs-on: ubuntu-latest
     if: github.actor == 'dependabot[bot]'
+    defaults:
+      run:
+        working-directory: swimstep
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,14 +24,12 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-          cache-dependency-path: swimstep/package-lock.json
+          cache-dependency-path: 'swimstep/package-lock.json'
 
       - name: Install dependencies
-        working-directory: swimstep
         run: npm ci
 
       - name: Run tests and build
-        working-directory: swimstep
         run: |
           npx eslint . --ext .js,.jsx
           npm run build
