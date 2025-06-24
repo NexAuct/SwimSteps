@@ -18,41 +18,88 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Trash2, CheckCircle, Clock } from "lucide-react";
+import { MoreHorizontal, Trash2, CheckCircle, Clock, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { bookingsAPI } from '@/lib/api';
 
 const BookingsPage = () => {
   const [bookings, setBookings] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
+  // Fetch bookings on component mount
   useEffect(() => {
-    try {
-      const savedBookings = JSON.parse(localStorage.getItem('swimBookings') || '[]');
-      setBookings(savedBookings);
-    } catch (error) {
-      console.error("Failed to parse bookings from localStorage:", error);
-      setBookings([]);
-    }
+    fetchBookings();
   }, []);
 
-  const updateBookingStatus = (id, status) => {
-    const updatedBookings = bookings.map(b => b.id === id ? { ...b, status } : b);
-    setBookings(updatedBookings);
-    localStorage.setItem('swimBookings', JSON.stringify(updatedBookings));
-    toast({
-      title: "Status Updated",
-      description: `Booking status changed to ${status}.`,
-    });
+  const fetchBookings = async () => {
+    try {
+      const response = await bookingsAPI.list();
+      if (response.success) {
+        setBookings(response.bookings);
+      } else {
+        throw new Error(response.error || 'Failed to fetch bookings');
+      }
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load bookings. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDelete = (id) => {
-    const updatedBookings = bookings.filter(booking => booking.id !== id);
-    setBookings(updatedBookings);
-    localStorage.setItem('swimBookings', JSON.stringify(updatedBookings));
-    toast({
-      title: "Booking Deleted",
-      description: "The booking has been removed successfully.",
-    });
+  const updateBookingStatus = async (id, status) => {
+    try {
+      const response = await bookingsAPI.updateStatus(id, status);
+      if (response.success) {
+        setBookings(prevBookings => 
+          prevBookings.map(booking => 
+            booking.id === id ? response.booking : booking
+          )
+        );
+        toast({
+          title: "Status Updated",
+          description: `Booking status changed to ${status}.`,
+        });
+      } else {
+        throw new Error(response.error || 'Failed to update status');
+      }
+    } catch (error) {
+      console.error('Error updating booking:', error);
+      toast({
+        variant: "destructive",
+        title: "Update Failed",
+        description: error.message || "Failed to update booking status.",
+      });
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      const response = await bookingsAPI.delete(id);
+      if (response.success) {
+        setBookings(prevBookings => 
+          prevBookings.filter(booking => booking.id !== id)
+        );
+        toast({
+          title: "Booking Deleted",
+          description: "The booking has been removed successfully.",
+        });
+      } else {
+        throw new Error(response.error || 'Failed to delete booking');
+      }
+    } catch (error) {
+      console.error('Error deleting booking:', error);
+      toast({
+        variant: "destructive",
+        title: "Delete Failed",
+        description: error.message || "Failed to delete booking.",
+      });
+    }
   };
 
   const getStatusVariant = (status) => {
@@ -62,6 +109,14 @@ const BookingsPage = () => {
       default: return 'outline';
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -98,12 +153,18 @@ const BookingsPage = () => {
               {bookings.length > 0 ? (
                 bookings.map((booking) => (
                   <TableRow key={booking.id}>
-                    <TableCell className="font-medium">{booking.name} (Age: {booking.age})</TableCell>
+                    <TableCell className="font-medium">
+                      {booking.name} (Age: {booking.age})
+                    </TableCell>
                     <TableCell>{booking.contact}</TableCell>
                     <TableCell>
-                      <Badge variant={getStatusVariant(booking.status)}>{booking.status}</Badge>
+                      <Badge variant={getStatusVariant(booking.status)}>
+                        {booking.status}
+                      </Badge>
                     </TableCell>
-                    <TableCell>{new Date(booking.submittedAt).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      {new Date(booking.submitted_at).toLocaleDateString()}
+                    </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -114,15 +175,22 @@ const BookingsPage = () => {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => updateBookingStatus(booking.id, 'Completed')}>
+                          <DropdownMenuItem 
+                            onClick={() => updateBookingStatus(booking.id, 'Completed')}
+                          >
                             <CheckCircle className="mr-2 h-4 w-4" />
                             Mark as Completed
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateBookingStatus(booking.id, 'Pending')}>
+                          <DropdownMenuItem 
+                            onClick={() => updateBookingStatus(booking.id, 'Pending')}
+                          >
                             <Clock className="mr-2 h-4 w-4" />
                             Mark as Pending
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(booking.id)}>
+                          <DropdownMenuItem 
+                            className="text-destructive" 
+                            onClick={() => handleDelete(booking.id)}
+                          >
                             <Trash2 className="mr-2 h-4 w-4" />
                             Delete
                           </DropdownMenuItem>

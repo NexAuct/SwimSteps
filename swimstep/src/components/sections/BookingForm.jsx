@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import { CheckCircle, Phone } from 'lucide-react';
+import { CheckCircle, Phone, Loader2 } from 'lucide-react';
+import { bookingsAPI } from '@/lib/api';
 
 const BookingForm = () => {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     age: '',
@@ -17,48 +19,48 @@ const BookingForm = () => {
     contact: '',
   });
 
-  const [bookings, setBookings] = useState(() => {
-    try {
-      const saved = localStorage.getItem('swimBookings');
-      return saved ? JSON.parse(saved) : [];
-    } catch (error) {
-      console.error("Could not parse swim bookings from localStorage", error);
-      return [];
-    }
-  });
-  
-  useEffect(() => {
-    localStorage.setItem('swimBookings', JSON.stringify(bookings));
-  }, [bookings]);
-
   const handleChange = (e) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (!formData.name || !formData.age || !formData.contact) {
-        toast({
-            variant: "destructive",
-            title: "Missing Information",
-            description: "Please fill in all required fields.",
-        });
-        return;
+      toast({
+        variant: "destructive",
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+      });
+      return;
     }
-    const newBooking = { 
-      ...formData, 
-      id: Date.now(), 
-      submittedAt: new Date().toISOString(),
-      status: 'Pending'
-    };
-    setBookings(prev => [newBooking, ...prev]);
-    toast({
-        title: "Booking Request Sent!",
-        description: "We've received your request and will contact you shortly.",
-        action: <CheckCircle className="text-green-500" />,
-    });
-    setFormData({ name: '', age: '', location: '', time: '', contact: '' });
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await bookingsAPI.create(formData);
+      
+      if (response.success) {
+        toast({
+          title: "Booking Request Sent!",
+          description: "We've received your request and will contact you shortly.",
+          action: <CheckCircle className="text-green-500" />,
+        });
+        setFormData({ name: '', age: '', location: '', time: '', contact: '' });
+      } else {
+        throw new Error(response.error || 'Failed to submit booking');
+      }
+    } catch (error) {
+      console.error('Booking submission error:', error);
+      toast({
+        variant: "destructive",
+        title: "Submission Failed",
+        description: error.message || "There was an error submitting your booking. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -85,27 +87,67 @@ const BookingForm = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="name">Name</Label>
-                      <Input id="name" placeholder="e.g. Alex Tan" value={formData.name} onChange={handleChange} required />
+                      <Input 
+                        id="name" 
+                        placeholder="e.g. Alex Tan" 
+                        value={formData.name} 
+                        onChange={handleChange} 
+                        required 
+                        disabled={isSubmitting}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="age">Age (or Child's Age)</Label>
-                      <Input id="age" placeholder="e.g. 7" value={formData.age} onChange={handleChange} required />
+                      <Input 
+                        id="age" 
+                        placeholder="e.g. 7" 
+                        value={formData.age} 
+                        onChange={handleChange} 
+                        required 
+                        disabled={isSubmitting}
+                      />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="location">Location (Condo Name / Area)</Label>
-                    <Input id="location" placeholder="e.g. Mont Kiara" value={formData.location} onChange={handleChange} />
+                    <Input 
+                      id="location" 
+                      placeholder="e.g. Mont Kiara" 
+                      value={formData.location} 
+                      onChange={handleChange} 
+                      disabled={isSubmitting}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="time">Preferred Time</Label>
-                    <Input id="time" placeholder="e.g. Weekday Afternoons" value={formData.time} onChange={handleChange} />
+                    <Input 
+                      id="time" 
+                      placeholder="e.g. Weekday Afternoons" 
+                      value={formData.time} 
+                      onChange={handleChange} 
+                      disabled={isSubmitting}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="contact">Contact Info (WhatsApp / Email)</Label>
-                    <Input id="contact" placeholder="Your contact details" value={formData.contact} onChange={handleChange} required />
+                    <Input 
+                      id="contact" 
+                      placeholder="Your contact details" 
+                      value={formData.contact} 
+                      onChange={handleChange} 
+                      required 
+                      disabled={isSubmitting}
+                    />
                   </div>
-                  <Button type="submit" className="w-full" size="lg">
-                    Book My Free Trial
+                  <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      'Book My Free Trial'
+                    )}
                   </Button>
                 </form>
                 <div className="mt-6 text-center">
