@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: 'swimstep/.nvmrc'
+        cache: 'npm'
+        cache-dependency-path: swimstep/package-lock.json
+
+    - name: Install dependencies
+      working-directory: swimstep
+      run: npm ci
+
+    - name: Run ESLint
+      working-directory: swimstep
+      run: npx eslint . --ext .js,.jsx
+
+    - name: Build
+      working-directory: swimstep
+      run: npm run build
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: swimstep/dist/
+        retention-days: 7
+
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          swimstep/node_modules
+          ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('swimstep/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
