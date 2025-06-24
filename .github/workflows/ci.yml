@@ -38,13 +38,3 @@ jobs:
         name: dist
         path: swimstep/dist/
         retention-days: 7
-
-    - name: Cache dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          swimstep/node_modules
-          ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('swimstep/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
