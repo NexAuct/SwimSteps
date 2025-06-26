@@ -24,9 +24,19 @@ import deleteHandler from './app/api/bookings/delete.js';
 // Convert Vercel handlers to Express middleware
 const convertHandler = (handler) => async (req, res) => {
   try {
+    console.log('Request URL:', req.url);  // Added log for debugging
+
+    // Create a new Headers object from req.headers to ensure compatibility
+    const headers = new Headers();
+    for (const [key, value] of Object.entries(req.headers)) {
+      if (value !== undefined) {
+        headers.append(key, value);
+      }
+    }
+
     const request = new Request(`http://localhost:${PORT}${req.url}`, {
       method: req.method,
-      headers: req.headers,
+      headers: headers,
       body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined,
     });
 
@@ -43,6 +53,7 @@ const convertHandler = (handler) => async (req, res) => {
 };
 
 // API routes
+
 app.post('/api/init', convertHandler(initHandler));
 app.post('/api/bookings/create', convertHandler(createHandler));
 app.get('/api/bookings/list', convertHandler(listHandler));
