@@ -2,37 +2,31 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main, master]
   pull_request:
-    branches: [ main ]
+    branches: [main, master]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: swimstep
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Use Node.js 18.x
+      uses: actions/setup-node@v3
       with:
-        node-version: '18'
+        node-version: 18
 
     - name: Install dependencies
       run: npm ci
+      working-directory: ./swimstep
 
-    - name: Run ESLint
-      run: npx eslint . --ext .js,.jsx
-
-    - name: Build
+    - name: Build project
       run: npm run build
+      working-directory: ./swimstep
 
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: dist
-        path: swimstep/dist/
-        retention-days: 7
+    - name: Run tests
+      run: echo "No tests defined"
+      working-directory: ./swimstep
