@@ -12,12 +12,12 @@ const audiences = [
   {
     icon: <School className="h-10 w-10 text-primary" />,
     title: 'Teens',
-    description: 'Master stroke technique, boost confidence & stamina for both competitive and recreational swimming.',
+    description: 'Master stroke technique, boost confidence &amp; stamina for both competitive and recreational swimming.',
   },
   {
     icon: <User className="h-10 w-10 text-primary" />,
     title: 'Adults',
-    description: 'From absolute beginners overcoming fear to advanced swimmers refining their form—it’s never too late to learn!',
+    description: 'From absolute beginners overcoming fear to advanced swimmers refining their form—it&apos;s never too late to learn!',
   },
 ];
 

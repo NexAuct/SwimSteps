@@ -8,7 +8,7 @@ const testimonials = [
     name: 'Emily R.',
     avatarText: 'A smiling mother with her young son by the pool',
     avatarAlt: 'Avatar of Emily R.',
-    quote: 'Coach Sarah is incredibly patient — my son looks forward to every single lesson! We\'ve seen so much progress.',
+    quote: 'Coach Sarah is incredibly patient — my son looks forward to every single lesson! We&apos;ve seen so much progress.',
     stars: 5,
   },
   {
@@ -29,7 +29,7 @@ const testimonials = [
     name: 'Michael C.',
     avatarText: 'A happy man in his 30s standing by the water',
     avatarAlt: 'Avatar of Michael C.',
-    quote: 'As an adult learning to swim, I was nervous. The instructors made me feel comfortable and I\'m finally confident in the water!',
+    quote: 'As an adult learning to swim, I was nervous. The instructors made me feel comfortable and I&apos;m finally confident in the water!',
     stars: 5,
   },
 ];

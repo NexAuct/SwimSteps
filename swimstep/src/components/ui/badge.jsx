@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
@@ -36,5 +37,11 @@ function Badge({
 }) {
   return (<div className={cn(badgeVariants({ variant, size }), className)} {...props} />);
 }
+
+Badge.propTypes = {
+  className: PropTypes.string,
+  variant: PropTypes.string,
+  size: PropTypes.string,
+};
 
 export { Badge, badgeVariants };
