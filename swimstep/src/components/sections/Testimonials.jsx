@@ -8,7 +8,7 @@ const testimonials = [
     name: 'Emily R.',
     avatarText: 'A smiling mother with her young son by the pool',
     avatarAlt: 'Avatar of Emily R.',
-    quote: 'Coach Sarah is incredibly patient — my son looks forward to every single lesson! We&apos;ve seen so much progress.',
+    quote: 'Coach Uracca is incredibly patient — my son looks forward to every single lesson! We&apos;ve seen so much progress.',
     stars: 5,
   },
   {
